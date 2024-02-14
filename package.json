@@ -1,0 +1,13 @@
+{
+    "name": "employee-tracker",
+    "version": "1.0.0",
+    "description": "App to track employee in a database",
+    "main": "index.js",
+    "scripts": {
+      "test": "jest"
+    },
+    "author": "Jeah Luna",
+    "dependencies": {
+      "inquirer": "^8.2.4"
+    }
+  }
