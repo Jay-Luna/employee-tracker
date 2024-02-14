@@ -1,24 +1,14 @@
-//  packages needed for this application
+//  Packages needed for this application
 const inquirer = require('inquirer');
-const express = require('express');
-const routes = require('./routes');
-// import sequelize connection
-const sequelize = require('./config/connection');
+const mysql = require('mysql2');
 
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use(routes);
-
-// sync sequelize models to the database, then turn on the server
-sequelize.sync({ force: false }).then(() => {
-    app.listen(PORT, () =>
-        console.log(`App listening on port ${PORT}!`));
+// Create the connection to database
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '1234abcd',
+    database: 'employee_db'
 });
-
 
 // Creates an array of questions for user input
 const questions = [
@@ -27,8 +17,7 @@ const questions = [
         message: 'What would you like to do?',
         choices: ['View All Employees', 'Add Employee', 'Update Employee Role',
             'View All Roles', 'Add Role', 'View All Departments', 'Add Department'],
-        name: 'action',
-
+        name: 'action'
     }
 ];
 
@@ -37,9 +26,18 @@ function init() {
     inquirer
         .prompt(questions)
         .then((response) => {
-            console.log(response.action);
+            getAllDepartments();
         });
 }
 
-// Function call to initialize app
+async function getAllDepartments() {
+    connection.query('SELECT * FROM `department`',
+        function (err, res) {
+            console.table(res);
+            if (err) throw err;
+            init();
+        }
+    )
+}
+
 init();
