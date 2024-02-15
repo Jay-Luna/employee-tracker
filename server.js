@@ -250,6 +250,7 @@ function addRole() {
     // Inquirer prompt to collect department data being added to table
     inquirer.prompt(questions)
         .then(({ title, salary, department }) => {
+            // get index value of department list (this is equivalent to department_id)
             var department_id = getDepartmentList().indexOf(department) + 1;
             let role = { title, salary, department_id };
             const sql = 'INSERT INTO role SET ?';
@@ -262,6 +263,7 @@ function addRole() {
         });
 }
 
+// View all departments & display table
 function getAllDepartments() {
     connection.query('SELECT * FROM department ORDER BY department.id',
         function (err, res) {
@@ -271,6 +273,7 @@ function getAllDepartments() {
     )
 }
 
+// Add new department and show prompts
 function addDepartment() {
     // Creates an array of questions for user input
     const questions = [
@@ -289,9 +292,9 @@ function addDepartment() {
             connection.query(sql, [name], function (err, res) {
                 if (err) throw err;
                 console.log("Added " + name + " to the database");
-                init();
+                init(); // start prompt again
             });
         });
 };
 
-init();
+init(); // start prompt
