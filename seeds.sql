@@ -41,7 +41,7 @@ VALUE ("Finance");
 INSERT INTO department (name)
 VALUE ("Legal");
 
--- EMPLOYEE SEEDS -------
+-- ROLE SEEDS -------
 INSERT INTO role (title, salary, department_id)
 VALUE ("Sales Lead", 100000, 1);
 INSERT INTO role (title, salary, department_id)

@@ -61,47 +61,53 @@ function displayTable(results) {
 }
 
 function getAllDepartmentNames() {
-    // const departmentList = [];
-    // try {
-    //     const sql = 'SELECT department.name FROM department';
+    var departmentArray = [];
+    connection.query('SELECT * FROM department', function (err, res) {
+        if (err) throw err
+        for (var i = 0; i < res.length; i++) {
+            departmentArray.push(res[i].name);
+        }
+    })
+    return departmentArray;
+}
 
-    //     const [results, fields] = connection.query({
-    //         sql,
-    //         rowsAsArray: true
-    //     });
-    //     console.log(results);
-    //     console.log(fields);
-    //     // results.forEach(department => departmentList.push(department.name));
-    //     // return departmentList;
-    // } catch (err) {
-    //     console.log(err);
-    // }
-    // connection.query(
-    //     {
-    //       sql,
-    //       rowsAsArray: true,
-    //       // ... other options
-    //     },
-    //     (err, rows, fields) => {
-    //       if (err instanceof Error) {
-    //         console.log(err);
-    //         return;
-    //       }
-
-    //       console.log(rows);
-    //       console.log(fields);
-    //     }
-    //   );
-    return ["Sales", "Engineering", "Finance"];
-
+var departmentId = 0;
+async function getDepartmentId(name) {
+    var departmentArray = [];
+    const sql = `SELECT * FROM department WHERE department.name = '` + name + `'`;
+    connection.query(sql, function (err, res) {
+        if (err) throw err
+        for (var i = 0; i < res.length; i++) {
+            departmentArray.push(res[i].name);
+        }
+    })
+    let selectedDepartment = departmentArray.filter(department => department.name === name)
+    console.log(selectedDepartment);
+    return selectedDepartment.id;
 }
 
 function getRoleList() {
-    return ["Sales Lead", "Salesperson", "Lead Engineer"];
+    var roleArr = [];
+    const sql = 'SELECT * FROM role';
+    connection.query(sql, function (err, res) {
+        if (err) throw err
+        for (var i = 0; i < res.length; i++) {
+            roleArr.push(res[i].title);
+        }
+    })
+    return roleArr;
 }
 
-function getAllEmployees() {
-    return ["John Doe", "Jane Doe"];
+function getEmployeeList() {
+    var employeeArr = [];
+    const sql = 'SELECT * FROM employee';
+    connection.query(sql, function (err, res) {
+        if (err) throw err
+        for (var i = 0; i < res.length; i++) {
+            employeeArr.push(res[i].first_name + ' ' + res[i].last_name);
+        }
+    })
+    return employeeArr;
 }
 
 function getAllEmployees() {
@@ -119,12 +125,12 @@ function addEmployee() {
         {
             type: 'input',
             message: `What is the employee's first name?`,
-            name: 'firstName',
+            name: 'first_name',
         },
         {
             type: 'input',
             message: `What is the employee's last name?`,
-            name: 'lastName',
+            name: 'last_name',
         },
         {
             type: 'list',
@@ -135,21 +141,23 @@ function addEmployee() {
         {
             type: 'list',
             message: `Who is the employee's manager?`,
-            choices: getAllEmployees(),
+            choices: getEmployeeList(),
             name: 'manager'
         }
     ];
 
     // Inquirer prompt to collect department data being added to table
     inquirer.prompt(questions)
-        .then(({ firstName, lastName, roles, manager }) => {
-            // let role = [title, salary, "1"];
-            // connection.query('INSERT INTO role (title, salary, department_id) VALUE (?)',
-            //     [role],
-            //     function (err, res) {
-            //         if (err) throw err;
-            //     }
-            // )
+        .then(({ first_name, last_name, roles, manager }) => {
+            let employee = { first_name, last_name, role_id: 1, manager_id: null };
+            console.log(employee)
+            const sql = 'INSERT INTO employee SET ?';
+            connection.query(sql, employee, function (err, res) {
+                if (err) throw err;
+                console.log("Added " + first_name + " " + last_name + " to the database");
+                init();
+            }
+            )
         });
 }
 
@@ -165,7 +173,7 @@ function updateEmployee() {
         {
             type: 'list',
             message: 'Which role do you want to assign the selected employee',
-            choices:  getRoleList(),
+            choices: getRoleList(),
             name: 'roles'
         }
     ];
@@ -202,7 +210,7 @@ function addRole() {
             name: 'title',
         },
         {
-            type: 'input',
+            type: 'number',
             message: 'What is the salary of the role?',
             name: 'salary',
         },
@@ -217,12 +225,15 @@ function addRole() {
     // Inquirer prompt to collect department data being added to table
     inquirer.prompt(questions)
         .then(({ title, salary, department }) => {
-            let role = [title, salary, "1"];
-            connection.query('INSERT INTO role (title, salary, department_id) VALUE (?)',
-                [role],
-                function (err, res) {
-                    if (err) throw err;
-                }
+            // let department_id = getDepartmentId(department);
+            // console.log(department_id)
+            let role = { title, salary, department_id: "1" };
+            const sql = 'INSERT INTO role SET ?';
+            connection.query(sql, role, function (err, res) {
+                if (err) throw err;
+                console.log("Added " + title + " to the database");
+                init();
+            }
             )
         });
 }
@@ -250,7 +261,6 @@ function addDepartment() {
     inquirer.prompt(questions)
         .then(({ name }) => {
             var sql = "INSERT INTO department (name) VALUE ('" + name + "')";
-            console.log(name);
 
             connection.query(sql, [name], function (err, res) {
                 if (err) throw err;
